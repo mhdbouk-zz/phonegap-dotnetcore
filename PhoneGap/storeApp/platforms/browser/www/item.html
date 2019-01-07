@@ -23,11 +23,15 @@
         <div class="row">
             <div class="col-md-4 col-md-offset-4" style="margin: 0 auto;">
                 <div class="card">
-                    <div class="card-header">
-                        Add new item
-                    </div>
+                    <h5 class="card-header">
+                        <span id="card-header">Add new item</span>
+                        <button type="button" id="delete-item" class="btn btn-danger float-right btn-sm d-none">Delete</button>
+                    </h5>
                     <div class="card-body">
                         <form id="add-item-form">
+                            <input type="hidden" value="" name="id" id="item-id">
+                            <input type="hidden" name="createdByUser" id="created-user">
+                            <input type="hidden" name="updatedByUser" id="updated-user">
                             <div class="form-group">
                                 <label for="item-name">Item Name</label>
                                 <input type="text" class="form-control" required name="name" id="item-name">
@@ -49,6 +53,19 @@
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/site.js"></script>
     <script>
+        // Read a page's GET URL variables and return them as an associative array.
+        function getUrlVars() {
+            var vars = [],
+                hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
         $(document).bind('deviceready', function () {
             if (localStorage.getItem('user') === undefined || localStorage.getItem('user') == null) {
                 window.location.href = 'user.html';
@@ -58,13 +75,65 @@
             }
 
             var user = JSON.parse(localStorage.getItem('user'));
+            var id = getUrlVars()["id"];
+            var editMode = false;
+            if (id != undefined) {
+                editMode = true;
+                $('#delete-item').removeClass('d-none');
+                $('#updated-user').val(user.firstName + ' ' + user.lastName);
+                $('#card-header').html('Edit Item');
+                $.ajax({
+                    type: 'GET',
+                    url: apiUrl + 'datas' + '/' + id,
+                    crossDomain: true,
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8",
+                        "Authorization": "Bearer " + user.token
+                    },
+                    success: function (resultData) {
+                        $('#item-id').val(resultData.id);
+                        $('#item-name').val(resultData.name);
+                        $('#item-description').val(resultData.description);
+                        $('#created-user').val(resultData.createdByUser);
+                    },
+                    error: function (xhr, status, error) {
+                        alert(xhr.responseJSON.message);
+                    }
+                });
+            }
+            if (!editMode) {
+                $('#created-user').val(user.firstName + ' ' + user.lastName);
+            }
+
+            $('#delete-item').on('click', function () {
+                if (confirm("Are you sure you want to delete?")) {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: apiUrl + 'datas' + '/' + id,
+                        crossDomain: true,
+                        headers: {
+                            "Content-Type": "application/json; charset=UTF-8",
+                            "Authorization": "Bearer " + user.token
+                        },
+                        success: function (resultData) {
+                            window.location.href = 'index.html';
+                        },
+                        error: function (xhr, status, error) {
+                            alert(xhr.responseJSON.message);
+                        }
+                    });
+                }
+            });
 
             $('#add-item-form').on('submit', function (e) {
                 e.preventDefault();
                 var data = objectifyForm($('#add-item-form').serializeArray());
+                if (!editMode) {
+                    data.id = 0;
+                }
                 $.ajax({
-                    type: 'POST',
-                    url: apiUrl + 'datas',
+                    type: editMode ? 'PUT' : 'POST',
+                    url: apiUrl + 'datas' + (editMode ? '/' + id : ''),
                     data: JSON.stringify(data),
                     crossDomain: true,
                     headers: {

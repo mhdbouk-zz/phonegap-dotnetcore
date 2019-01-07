@@ -39,12 +39,12 @@
         <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
         <param name="onload" value="true" />
     </feature>
-    <name>helloworld</name>
+    <name>Online Store</name>
     <description>
-        Hello World sample application that responds to the deviceready event.
+        Online Store, Login, Register and post new item
     </description>
-    <author email="support@phonegap.com" href="http://phonegap.com">
-        PhoneGap Team
+    <author email="mhdbouk@gmail.com" href="https://twitter.com/mhdbouk">
+        Mohamad Dbouk
     </author>
     <content src="index.html" />
     <access origin="*" />

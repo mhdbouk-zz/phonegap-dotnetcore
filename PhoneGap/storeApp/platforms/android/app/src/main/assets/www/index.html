@@ -27,11 +27,12 @@
                 <div class="col-md-4 col-md-offset-4" style="margin: 0 auto;">
                     <div class="card" style="margin-bottom: 15px;">
                         <div class="card-body">
-                            <a id="Add New" class="btn btn-sm btn-success btn-block" href="new-item.html">Add new Item</a>
+                            <a id="Add New" class="btn btn-sm btn-success btn-block" href="item.html">Add new Item</a>
                         </div>
                     </div>
                 </div>
             </div>
+            <div id="loader" style="text-align: center;"><img src="assets/lg.dual-ring-loader.gif" style="height: 100px;"></div>
         </div>
 
     </div>
@@ -52,6 +53,7 @@
             var user = JSON.parse(localStorage.getItem('user'));
             $('#hello-user').html('Hello, ' + user.firstName + '!');
             $('#add-button').removeClass('d-none');
+
             $.ajax({
                 type: 'GET',
                 url: apiUrl + 'data',
@@ -61,20 +63,32 @@
                     "Authorization": "Bearer " + user.token
                 },
                 success: function (resultData) {
-                    console.log(resultData);
+                    $('#loader').addClass('d-none');
                     for (let i = 0; i < resultData.length; i++) {
                         const item = resultData[i];
                         var result = '<div class="row">' +
                             '<div class="col-md-4 col-md-offset-4" style="margin: 0 auto;">' +
-                            '<div class="card" style="margin-bottom: 15px;">' +
-                            '<div class="card-header">' +
-                            'Item #' + item.id +
+                            '   <a href="item.html?id=' + item.id + '">' +
+                            '       <div class="card" style="margin-bottom: 15px;">' +
+                            '           <div class="card-body">' +
+                            '<h6 class="card-title">Item #' + item.id + '</h6>' +
+                            '           <h4>' + item.name + '</h4>';
+                        if (item.description != undefined && item.description != null &&
+                            item.description.length > 0) {
+                            result += '<p>' + item.description + '</p>';;
+                        }
+                        if (item.createdByUser != undefined && item.createdByUser != null &&
+                            item.createdByUser.length > 0) {
+                            result += '<pre>Created By ' + item.createdByUser + '</pre>';
+                        }
+                        if (item.updatedByUser != undefined && item.updatedByUser != null &&
+                            item.updatedByUser.length > 0) {
+                            result += '<pre>Updated By ' + item.updatedByUser + '</pre>';
+                        }
+                        result += '</div>' +
                             '</div>' +
-                            '<div class="card-body">' +
-                            '<h4>' + item.name + '</h4>' +
                             '</div>' +
-                            '</div>' +
-                            '</div>' +
+                            '</a>' +
                             '</div>';
                         $('#data').append(result);
                     }

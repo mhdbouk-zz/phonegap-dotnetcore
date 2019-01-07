@@ -17,3 +17,8 @@ body {
 .main-app {
     margin-top: 60px;
 }
+
+a {
+    color: #333;
+    text-decoration: none;
+}
